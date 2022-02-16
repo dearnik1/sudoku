@@ -17,7 +17,6 @@ class Element:
 
 
     def fill(self, number):
-        print('Should fill only one element:')
         if not self.is_empty:
             return False
         self.value = number
@@ -28,13 +27,12 @@ class Element:
 class Sudoku:
     def __init__(self, file_name):
         self.size = 0   # How many elements completed. Should be 81 to finish the sudoku
-        element = Element()
-        self.elements  = [[element]*9]*9     # initiate the 2D array
+        self.elements = [[Element() for i in range(9)] for j in range(9)]     # initiate the 2D array
         file = open(file_name, 'r')
         Lines = file.readlines()
         row = -1
         for line in Lines:
-            row+=1
+            row += 1
             column = -1
             for character in line:
                 if character == '|':
@@ -63,10 +61,7 @@ class Sudoku:
                 self.elements[row][i].impossible_values.add(number)
         # TODO: traverse in subgrid
 
-        self.display()
-        print('===================')
         self.elements[row][column].fill(number)
-        self.display()
 
         return 1
 
@@ -81,7 +76,7 @@ class Sudoku:
 
 cwd = os.getcwd()
 sudoku = Sudoku('input.txt')
-# sudoku.display()
+sudoku.display()
 
 
 
