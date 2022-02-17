@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import copy
+
 import sys
 import itertools
 
@@ -169,12 +171,138 @@ class Sudoku:
                 else:
                     print('|' + str(el), end='')
             print('|')
-            
 
 
-sudoku = Sudoku('input.txt')
-# sudoku = Sudoku('input_hard.txt')
-sudoku.display()
-sudoku.guess()
-sudoku.display()
+class Sudoku2:
+    _ALL_VALUES = set(range(1, 10))
+
+    def __init__(self, file_name):
+        self.grid = self._read_sudoku_from_file(file_name)
+
+    def display(self):
+        for row in self.grid:
+            row_str = '|'.join([str(v) if v != 0 else ' '
+                                for v in row])
+            print(f"|{row_str}|")
+        print('-' * 20)
+
+    @staticmethod
+    def _read_sudoku_from_file(file_name):
+        with open(file_name, 'r') as file:
+            rows = []
+            for line in file.readlines():
+                # trim extra elements because of leading and trailing seperator
+                line = line.split('|')[1:-1]
+                row = [int(value) if value.isdigit() else 0
+                       for value in line]
+                rows.append(row)
+            return rows
+
+    def solve(self):
+        counter = 1000
+        while counter and not self._solved:
+            self._try_to_solve()
+            counter -= 1
+
+        if self._solved:
+            print("Finally, solved!")
+        else:
+            print("I'm stupid, sorry :(")
+
+        self.display()
+
+    def _try_to_solve(self):
+        if not self.update_values_for_obvious_cases():
+            if not self.update_values_for_50_percent_cases():
+                return
+                # if not self.update_values_for_33_percent_cases():
+                #     break
+
+    def update_values_for_obvious_cases(self):
+        updated = False
+        for i, row in enumerate(self.grid):
+            for j, value in enumerate(row):
+                if value == 0:
+                    row_values = self._get_row_values(i)
+                    col_values = self._get_col_values(j)
+                    subgrid_values = self._get_subgrid_values(i, j)
+                    existing_values = row_values | col_values | subgrid_values
+                    existing_values.remove(0)
+
+                    if len(existing_values) == 8:
+                        new_value = (self._ALL_VALUES - existing_values).pop()
+                        self.grid[i][j] = new_value
+                        print(f"Uhhu, value at [{i}][{j}] updated to {new_value}")
+                        updated = True
+        return updated
+
+    def update_values_for_50_percent_cases(self):
+        for i, row in enumerate(self.grid):
+            for j, value in enumerate(row):
+                if value == 0:
+                    row_values = self._get_row_values(i)
+                    col_values = self._get_col_values(j)
+                    subgrid_values = self._get_subgrid_values(i, j)
+                    existing_values = row_values | col_values | subgrid_values
+                    existing_values.remove(0)
+
+                    if len(existing_values) == 7:
+                        left_value, right_value = (self._ALL_VALUES - existing_values)
+                        data = {
+                            'left_value': left_value,
+                            'right_value': right_value
+                        }
+                        grid_temp = copy.deepcopy(self.grid)
+                        self.grid[i][j] = left_value
+                        self._try_to_solve()
+
+                        if not self._solved:
+                            self.grid = grid_temp
+                            self.grid[i][j] = right_value
+                            self._try_to_solve()
+
+                        if not self._solved:
+                            self.grid = grid_temp
+        return self._solved
+
+    @property
+    def _solved(self):
+        for row in self.grid:
+            for value in row:
+                if not value:
+                    return False
+        return True
+
+    def _get_row_values(self, row_index):
+        return set(self.grid[row_index])
+
+    def _get_col_values(self, col_index):
+        result = set()
+        for row in self.grid:
+            result.add(row[col_index])
+        return result
+
+    def _get_subgrid_values(self, row_index, col_index):
+        result = set()
+        for i in self._get_index_range_for_subgrid(row_index):
+            for j in self._get_index_range_for_subgrid(col_index):
+                result.add(self.grid[i][j])
+        return result
+
+    @staticmethod
+    def _get_index_range_for_subgrid(index):
+        return [i + index - index % 3 for i in range(3)]
+
+
+if __name__ == '__main__':
+    sudoku = Sudoku('input.txt')
+    # sudoku = Sudoku('input_hard.txt')
+    # sudoku.display()
+    # sudoku.guess()
+    # sudoku.display()
+
+    sudoku2 = Sudoku2('input.txt')
+    sudoku2.display()
+    sudoku2.solve()
+
 
