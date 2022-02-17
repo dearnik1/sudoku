@@ -140,7 +140,8 @@ class Sudoku:
                                 counter = 0
                                 # traverse in row
                                 for r,c in self.get_adjacent_in_row(row, column):
-                                    if x in self.elements[r][c].impossible_values:
+                                    if x in self.elements[r][c].impossible_values or \
+                                            not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
                                     self.fill(row, column, x)
@@ -150,7 +151,8 @@ class Sudoku:
                                 counter = 0
                                 # traverse in column
                                 for r, c in self.get_adjacent_in_column(row, column):
-                                    if x in self.elements[r][c].impossible_values:
+                                    if x in self.elements[r][c].impossible_values or\
+                                            not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
                                     self.fill(row, column, x)
@@ -160,7 +162,8 @@ class Sudoku:
                                 counter = 0
                                 # traverse in subgrid
                                 for r, c in self.get_adjacent_in_subgrid(row, column):
-                                    if x in self.elements[r][c].impossible_values:
+                                    if x in self.elements[r][c].impossible_values or \
+                                            not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
                                     self.fill(row, column, x)
