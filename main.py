@@ -42,24 +42,10 @@ class Sudoku:
                 
 
     def fill(self, row, column, number):
+        self.size += 1
         if not self.elements[row][column].is_empty:
             print("The element <{},{}> already exists".format(row, column))
             return False
-        # traverse in row
-        # for i in range(9):
-        #     if self.elements[i][column].value == number:
-        #         print("{} at <{},{}> conflicts with <{},{}>".format(number,row,column,i,column))
-        #         return False
-        #     else:
-        #         self.elements[i][column].impossible_values.add(number)
-        # # traverse in column
-        # for i in range(9):
-        #     if self.elements[row][i].value == number:
-        #         print("{} at <{},{}> conflicts with <{},{}>".format(number,row,column,row,i))
-        #         return False
-        #     else:
-        #         self.elements[row][i].impossible_values.add(number)
-        # # TODO: traverse in subgrid
         adjacent = self.get_adjacent_elements_coordinates(row, column)
         for r, c in adjacent:
             if self.elements[r][c].value == number:
@@ -67,23 +53,10 @@ class Sudoku:
                 return False
             else:
                 self.elements[r][c].impossible_values.add(number)
-
-        self.elements[row][column].change_element(number)
-        return 1
+        print('Adding {} to [{},{}]'.format(number, row, column))
+        return self.elements[row][column].change_element(number)
 
     def get_adjacent_elements_coordinates(self, row, column):
-
-        # res = set()
-        # for i in range(9):
-        #     pair = (i, column)
-        #     res.add(pair)
-        #     pair = (row, i)
-        #     res.add(pair)
-        # x = int(row / 3)
-        # y = int(column / 3)
-        # for i in range(9):
-        #     pair = (x * 3 + int(i / 3), y * 3 + i % 3)
-        #     res.add(pair)
         res = set()
         res.update(self.get_adjacent_in_column(row, column))
         res.update(self.get_adjacent_in_row(row, column))
@@ -114,6 +87,7 @@ class Sudoku:
             res.add(pair)
         return res
 
+    # fill out the most obvious elements
     def upgrade(self):
         changes_made = True
         while changes_made:
@@ -126,8 +100,8 @@ class Sudoku:
                         changes_made = True
                         for x in range(1, 10):
                             if x not in el.impossible_values:
-                                self.fill(row, column, x)
-                                print('Adding {} to {},{}'.format(x, row, column))
+                                if not self.fill(row, column, x):
+                                    return False
                                 break
             # fill elements that can have a number that adjacent elements cannot...
             for row in range(9):
@@ -144,8 +118,8 @@ class Sudoku:
                                             not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
-                                    self.fill(row, column, x)
-                                    print('Adding {} to {},{}'.format(x, row, column))
+                                    if not self.fill(row, column, x):
+                                        return False
                                     changes_made = True
                                     break
                                 counter = 0
@@ -155,8 +129,8 @@ class Sudoku:
                                             not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
-                                    self.fill(row, column, x)
-                                    print('Adding {} to {},{}'.format(x, row, column))
+                                    if not self.fill(row, column, x):
+                                        return False
                                     changes_made = True
                                     break
                                 counter = 0
@@ -166,10 +140,25 @@ class Sudoku:
                                             not self.elements[r][c].is_empty:
                                         counter += 1
                                 if counter == 8:
-                                    self.fill(row, column, x)
-                                    print('Adding {} to {},{}'.format(x, row, column))
+                                    if not self.fill(row, column, x):
+                                        return False
                                     changes_made = True
                                     break
+        return True
+
+    # when stuck, just pick a random digit and check if it works
+    def guess(self):
+        if not self.upgrade():
+            return False        # mistake found
+        if self.size == 81:
+            return True     # done
+        else:
+            print('Guessing...')
+            print(self.elements[0][5].impossible_values)
+            # make a copy of sudoku
+            # fill 1 random element
+            # call guess()
+            # if false - try another element
 
 
     def display(self):
@@ -184,7 +173,8 @@ class Sudoku:
 
 
 sudoku = Sudoku('input.txt')
+# sudoku = Sudoku('input_hard.txt')
 sudoku.display()
-sudoku.upgrade()
+sudoku.guess()
 sudoku.display()
 
