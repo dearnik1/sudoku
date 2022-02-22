@@ -193,16 +193,24 @@ class Sudoku:
         return False
 
 
-    # print the sudoku in console
+    # print the sudoku in console and in a file
     def display(self):
-        for row in self.elements:
-            for el in row:
-                if el.value == 0:
-                    print('| ', end='')
-                else:
-                    print('|' + str(el), end='')
-            print('|')
-            
+        with open("solution2.txt", 'w') as file:
+            output_string = ''
+            for row in self.elements:
+                for el in row:
+                    if el.value == 0:
+                        output_string += '| '
+                        print('| ', end='')
+                    else:
+                        output_string += '|' + str(el)
+
+                        print('|' + str(el), end='')
+                output_string += '|\n'
+                print('|')
+                file.write(output_string)
+                output_string = ''
+
 
 if __name__ == '__main__':
     sudoku = Sudoku('input.txt')
